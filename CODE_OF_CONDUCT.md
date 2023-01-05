@@ -59,9 +59,12 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to Daniel Roe directly at daniel@roe.dev. If you want to report
-unacceptable behavior by Daniel Roe, please contact Sébastien Chopin
-instead at seb@atinux.com.
+reported to any of the following people:
+
+- Sébastien Chopin <seb@atinux.com>
+- Alex Chopin <alex@nuxtjs.com>
+- Pooya Parsa <pyapar@gmail.com>
+- Daniel Roe <daniel@roe.dev>
 
 All complaints will be reviewed and investigated promptly and fairly.
 
