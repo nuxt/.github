@@ -63,7 +63,7 @@ reported to any of the following people:
 
 - Sébastien Chopin <seb@atinux.com>
 - Alex Chopin <alex@nuxtjs.com>
-- Pooya Parsa <pyapar@gmail.com>
+- Pooya Parsa <pooya@pi0.io>
 - Daniel Roe <daniel@roe.dev>
 
 All complaints will be reviewed and investigated promptly and fairly.
