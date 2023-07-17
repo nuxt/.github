@@ -1,9 +1,7 @@
 # Security Policy
 
-## Reporting a Vulnerability
+If you discover a security vulnerability in `NexveltUI`, please email [phojrengel@gmail.com](mailto:phojrengel@gmail.com) with a detailed description of the issue, steps to reproduce it, and any relevant information or PoC (Proof-of-Concept) code.
 
-To report a vulnerability, please send an email to **security@nuxtjs.org** or submit it for a bounty via [Huntr](https://huntr.dev/bounties/disclose/).
+Please allow us a reasonable amount of time to address the issue before making it public. Thank you for helping us improve the security of our project.
 
-All security vulnerabilities will be promptly verified and addressed. 
-
-While the discovery of new vulnerabilities is rare, we also recommend always using the latest versions of Nuxt and other dependencies by maintaining lock files (`yarn.lock`, `package-lock.json` and `pnpm-lock.yaml`) in order to ensure your application remains as secure as possible.
+Thank you for helping us maintain the security of **NexveltUI**.
