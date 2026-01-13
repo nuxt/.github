@@ -1,0 +1,78 @@
+name: Reusable Spam Transfer
+
+on:
+  workflow_call:
+    inputs:
+      spam-repo-id:
+        description: 'Node ID of spam repository for transfers'
+        type: string
+        required: true
+
+jobs:
+  transfer-spam:
+    name: Transfer Spam Issue
+    runs-on: ubuntu-latest
+    # Only run when 'spam' label is added
+    if: github.event.label.name == 'spam'
+
+    steps:
+      - name: Transfer issue to spam repository
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          SPAM_REPO_ID: ${{ inputs.spam-repo-id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue
+            const spamRepoId = process.env.SPAM_REPO_ID
+
+            if (!spamRepoId) {
+              core.setFailed('SPAM_REPO_ID input is required but was not provided')
+              return
+            }
+
+            core.info(`Transferring issue #${issue.number} to spam repository...`)
+
+            try {
+              const result = await github.graphql(`
+                mutation($issueId: ID!, $repoId: ID!) {
+                  transferIssue(input: { issueId: $issueId, repositoryId: $repoId }) {
+                    issue {
+                      number
+                      url
+                    }
+                  }
+                }
+              `, {
+                issueId: issue.node_id,
+                repoId: spamRepoId,
+              })
+
+              const transferredIssue = result.transferIssue.issue
+              core.info(`Issue transferred successfully to ${transferredIssue.url}`)
+
+              // Write job summary
+              core.summary
+                .addHeading('Spam Issue Transferred', 2)
+                .addTable([
+                  [{ data: 'Property', header: true }, { data: 'Value', header: true }],
+                  ['Original Issue', `#${issue.number}`],
+                  ['Title', issue.title],
+                  ['Author', issue.user.login],
+                  ['Transferred To', transferredIssue.url],
+                ])
+                .addRaw('\n\nIssue was labeled as spam and has been transferred to the spam repository.')
+
+              await core.summary.write()
+
+            } catch (error) {
+              core.setFailed(`Failed to transfer issue: ${error.message}`)
+
+              // Write failure summary
+              core.summary
+                .addHeading('Spam Transfer Failed', 2)
+                .addRaw(`Failed to transfer issue #${issue.number}: ${error.message}`)
+                .addRaw('\n\nThe spam label was added but the issue could not be transferred. Manual intervention may be required.')
+
+              await core.summary.write()
+            }
