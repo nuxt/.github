@@ -7,14 +7,6 @@ on:
         description: 'Fail the workflow if provenance changes are detected'
         type: boolean
         default: true
-      base-ref:
-        description: 'Base ref for dependency review'
-        type: string
-        required: true
-      head-ref:
-        description: 'Head ref for dependency review'
-        type: string
-        required: true
 
 permissions:
   contents: read
@@ -33,7 +25,8 @@ jobs:
           fail-on-provenance-change: ${{ inputs.fail-on-provenance-change }}
 
       - name: Dependency review
+        if: github.event.pull_request || github.event.merge_group
         uses: actions/dependency-review-action@da24556b548a50705dd671f47852072ea4c105d9 # v4.5.0
         with:
-          base-ref: ${{ inputs.base-ref }}
-          head-ref: ${{ inputs.head-ref }}
+          base-ref: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          head-ref: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
