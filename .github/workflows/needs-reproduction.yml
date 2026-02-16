@@ -1,0 +1,47 @@
+name: Reusable Needs Reproduction Comment
+
+on:
+  workflow_call:
+    inputs:
+      label:
+        description: 'Label name that triggers the comment'
+        type: string
+        default: 'needs reproduction'
+      comment:
+        description: 'Markdown comment body to post on the issue'
+        type: string
+        required: true
+
+jobs:
+  comment:
+    name: Comment on issue
+    runs-on: ubuntu-latest
+    if: |
+      !github.event.issue.pull_request &&
+      github.event.issue.body
+    permissions:
+      issues: write
+
+    steps:
+      - name: Post reproduction comment
+        if: github.event.label.name == inputs.label
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: ${{ toJSON(inputs.comment) }},
+            })
+
+            core.summary
+              .addHeading('Needs Reproduction Comment', 2)
+              .addTable([
+                [{ data: 'Property', header: true }, { data: 'Value', header: true }],
+                ['Issue', `#${context.payload.issue.number}`],
+                ['Label', '${{ inputs.label }}'],
+              ])
+              .addRaw('\n\nPosted reproduction comment on issue.')
+
+            await core.summary.write()
