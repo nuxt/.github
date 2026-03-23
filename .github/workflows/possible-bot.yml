@@ -1,0 +1,47 @@
+name: Reusable Possible Bot Comment
+
+on:
+  workflow_call:
+    inputs:
+      label:
+        description: 'Label name that triggers the comment'
+        type: string
+        default: 'possible bot'
+      comment:
+        description: 'Markdown comment body to post on the issue or PR'
+        type: string
+        required: true
+
+jobs:
+  comment:
+    name: Comment on issue or PR
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Post possible bot comment
+        if: github.event.label.name == inputs.label
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: ${{ toJSON(inputs.comment) }},
+            })
+
+            const isPR = !!context.payload.issue.pull_request
+            core.summary
+              .addHeading('Possible bot comment', 2)
+              .addTable([
+                [{ data: 'Property', header: true }, { data: 'Value', header: true }],
+                ['Issue/PR', `#${context.payload.issue.number}`],
+                ['Type', isPR ? 'Pull Request' : 'Issue'],
+                ['Label', '${{ inputs.label }}'],
+              ])
+              .addRaw('\n\nPosted AI contribution policy comment.')
+
+            await core.summary.write()
