@@ -12,13 +12,14 @@ on:
         type: string
         required: true
 
+permissions:
+  issues: write
+  pull-requests: write
+
 jobs:
   comment:
     name: Comment on issue or PR
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      pull-requests: write
 
     steps:
       - name: Post possible bot comment

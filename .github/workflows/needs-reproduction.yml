@@ -12,6 +12,9 @@ on:
         type: string
         required: true
 
+permissions:
+  issues: write
+
 jobs:
   comment:
     name: Comment on issue
@@ -19,8 +22,6 @@ jobs:
     if: |
       !github.event.issue.pull_request &&
       github.event.issue.body
-    permissions:
-      issues: write
 
     steps:
       - name: Post reproduction comment

@@ -28,6 +28,11 @@ on:
         type: string
         default: 'Nuxt.js framework'
 
+permissions:
+  contents: read
+  issues: write
+  models: read
+
 jobs:
   add-pending-label:
     name: Add `pending-triage` label

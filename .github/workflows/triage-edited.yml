@@ -8,6 +8,11 @@ on:
         type: string
         default: 'main'
 
+permissions:
+  contents: read
+  issues: write
+  models: read
+
 jobs:
   check-reproduction:
     name: Check for Reproduction

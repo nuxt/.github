@@ -8,6 +8,9 @@ on:
         type: string
         required: true
 
+permissions:
+  issues: write
+
 jobs:
   transfer-spam:
     name: Transfer Spam Issue
