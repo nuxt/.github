@@ -77,6 +77,7 @@ jobs:
         id: triage
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ENABLE_TRANSLATION: ${{ inputs.enable-translation }}
           ENABLE_BODY_TRANSLATION: ${{ inputs.enable-body-translation }}
           SPAM_TRANSFER_REPO_ID: ${{ inputs.spam-repo-id }}
