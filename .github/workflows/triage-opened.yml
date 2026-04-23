@@ -27,6 +27,11 @@ on:
         description: 'Project name for AI context (e.g., "Nuxt.js framework")'
         type: string
         default: 'Nuxt.js framework'
+      needs-reproduction-comment:
+        description: 'Comment body to post when needs reproduction label is added (leave
+          empty for default)'
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -82,6 +87,7 @@ jobs:
           ENABLE_BODY_TRANSLATION: ${{ inputs.enable-body-translation }}
           SPAM_TRANSFER_REPO_ID: ${{ inputs.spam-repo-id }}
           PROJECT_NAME: ${{ inputs.project-name }}
+          NEEDS_REPRO_COMMENT: ${{ inputs.needs-reproduction-comment }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -92,6 +98,7 @@ jobs:
             const repo = context.repo
             const labels = getLabels()
             const projectName = process.env.PROJECT_NAME
+            const needsReproComment = (process.env.NEEDS_REPRO_COMMENT || `Would you be able to provide a **minimal** [reproduction](https://nuxt.com/docs/4.x/community/reporting-bugs/#create-a-minimal-reproduction)? 🙏\n\nA GitHub repository, StackBlitz, or CodeSandbox link with a minimal repro helps us triage and fix this quickly.`).trim()
 
             // Initialize AI client
             const ai = createAIClient({
@@ -230,6 +237,18 @@ jobs:
                 issue_number: issue.number,
                 labels: labelsToAdd,
               })
+
+              if (labelsToAdd.includes(labels.NEEDS_REPRODUCTION) && needsReproComment) {
+                await github.rest.issues.createComment({
+                  ...repo,
+                  issue_number: issue.number,
+                  body: needsReproComment,
+                  headers: {
+                    'X-GitHub-Api-Version': '2022-11-28',
+                  },
+                })
+                actions.push({ action: 'comment', type: 'needs_reproduction' })
+              }
             }
 
             // Step 6: Handle translation if needed
@@ -310,6 +329,7 @@ jobs:
             if (actions.length > 0) {
               core.summary.addList(actions.map(a => {
                 if (a.action === 'label') return `Added label: \`${a.label}\` (${a.reason})`
+                if (a.action === 'comment' && a.type === 'needs_reproduction') return 'Posted needs reproduction guidance comment'
                 if (a.action === 'set_type') return `Set issue type: \`${a.type}\``
                 if (a.action === 'translate') return `Translated from ${a.from} (title: ${a.titleTranslated}, body: ${a.bodyTranslated})`
                 if (a.action === 'transferred') return `Transferred issue (${a.reason})`
