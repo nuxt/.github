@@ -200,6 +200,9 @@ jobs:
                   ...repo,
                   issue_number: issue.number,
                   state: 'open',
+                  headers: {
+                    'X-GitHub-Api-Version': '2022-11-28',
+                  },
                 })
                 actions.push({ action: 'reopen', reason: analysis.possibleRegression ? 'regression' : 'new evidence' })
 

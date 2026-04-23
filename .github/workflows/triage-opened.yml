@@ -212,6 +212,9 @@ jobs:
                     ...repo,
                     issue_number: issue.number,
                     type: githubIssueType,
+                    headers: {
+                      'X-GitHub-Api-Version': '2022-11-28',
+                    },
                   })
                   actions.push({ action: 'set_type', type: githubIssueType })
                 } catch (error) {
@@ -272,7 +275,12 @@ jobs:
                     updateData.body = issue.body + separator + translation.translatedBody
                   }
 
-                  await github.rest.issues.update(updateData)
+                  await github.rest.issues.update({
+                    ...updateData,
+                    headers: {
+                      'X-GitHub-Api-Version': '2022-11-28',
+                    },
+                  })
                   actions.push({
                     action: 'translate',
                     from: spokenLanguage,
