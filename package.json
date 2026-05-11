@@ -4,6 +4,6 @@
   "license": "MIT",
   "packageManager": "pnpm@11.0.9",
   "devDependencies": {
-    "@types/node": "^24.12.2"
+    "@types/node": "^24.12.3"
   }
 }
