@@ -1,0 +1,118 @@
+name: Reusable Release
+
+on:
+  workflow_call:
+    inputs:
+      pack-command:
+        description: "Command that produces .tgz tarballs. Defaults to `pnpm pack` at the repo root."
+        type: string
+        default: "pnpm pack --pack-destination ."
+      tarball-glob:
+        description: "Glob (relative to repo root) for tarballs to publish."
+        type: string
+        default: "*.tgz"
+      tag:
+        description: "npm dist-tag for the staged publish. `npm stage publish` only supports a single tag at stage time."
+        type: string
+        default: "latest"
+      environment:
+        description: "GitHub environment name for the publish job. Must match the npm trusted-publisher entry on each package."
+        type: string
+        default: "npm"
+      runs-on:
+        description: "Runner image for the publish job."
+        type: string
+        default: "ubuntu-latest"
+
+jobs:
+  tag-and-release:
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'v')
+    concurrency:
+      group: release-tag
+    permissions:
+      contents: write
+      actions: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - name: Read version from package.json
+        id: pkg
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: 🏷️ Create and push tag
+        env:
+          TAG_NAME: v${{ steps.pkg.outputs.version }}
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+
+      - name: 🛳️ Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: v${{ steps.pkg.outputs.version }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: gh release create "$TAG_NAME" --title "$TAG_NAME" --notes "$BODY"
+
+      - name: 🚀 Dispatch publish workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: v${{ steps.pkg.outputs.version }}
+        run: gh workflow run release.yml --ref "$TAG_NAME"
+
+  publish:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    concurrency:
+      group: release-publish
+    permissions:
+      contents: read
+      id-token: write
+    environment: ${{ inputs.environment }}
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - run: corepack enable
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: latest
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: 📦 Produce tarballs
+        run: ${{ inputs.pack-command }}
+
+      - name: 📤 Stage publish all tarballs
+        env:
+          TARBALL_GLOB: ${{ inputs.tarball-glob }}
+          DIST_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob globstar
+          tarballs=( $TARBALL_GLOB )
+          if (( ${#tarballs[@]} == 0 )); then
+            echo "::error::No tarballs matched glob '$TARBALL_GLOB'"
+            exit 1
+          fi
+          echo "Staging ${#tarballs[@]} tarball(s) with --tag=$DIST_TAG"
+          for t in "${tarballs[@]}"; do
+            echo "::group::npm stage publish $t"
+            npm stage publish "$t" --provenance --access public --tag "$DIST_TAG"
+            echo "::endgroup::"
+          done
+          # On partial-failure rerun, the previously-staged tarballs may
+          # cause this step to fail again on a duplicate-stage error. If
+          # that happens, run `npm stage list` to see what is already
+          # staged and either approve/reject those on npmjs.com or use
+          # `npm stage reject <id>` before rerunning.
