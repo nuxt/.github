@@ -19,7 +19,7 @@ permissions:
 jobs:
   comment:
     name: Comment on issue or PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
       - name: Post possible bot comment

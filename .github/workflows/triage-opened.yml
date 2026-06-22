@@ -41,7 +41,7 @@ permissions:
 jobs:
   add-pending-label:
     name: Add `pending-triage` label
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: |
       inputs.add-pending-label &&
       github.event.issue.labels.length == 0 &&
@@ -61,7 +61,7 @@ jobs:
 
   llm-triage:
     name: LLM triage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: |
       github.event.issue.user.type != 'Bot' &&
       !github.event.issue.pull_request
