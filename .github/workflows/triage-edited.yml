@@ -16,7 +16,7 @@ permissions:
 jobs:
   check-reproduction:
     name: Check for Reproduction
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     # Only run for issues with 'needs reproduction' label (not bots, not PRs)
     if: |
       github.event.issue.user.type != 'Bot' &&

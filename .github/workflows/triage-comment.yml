@@ -16,7 +16,7 @@ permissions:
 jobs:
   analyze-comment:
     name: Analyze comment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     # Only run for:
     # - Non-bot comments
     # - Issues that are either closed OR have 'needs reproduction' label
