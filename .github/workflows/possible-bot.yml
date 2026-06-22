@@ -19,11 +19,11 @@ permissions:
 jobs:
   comment:
     name: Comment on issue or PR
+    if: github.event.label.name == inputs.label
     runs-on: ubuntu-slim
 
     steps:
       - name: Post possible bot comment
-        if: github.event.label.name == inputs.label
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
