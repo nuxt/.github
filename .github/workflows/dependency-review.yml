@@ -18,15 +18,17 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Check provenance downgrades
-        uses: danielroe/provenance-action@41bcc969e579d9e29af08ba44fcbfdf95cee6e6c # v0.1.1
-        with:
-          fail-on-provenance-change: ${{ inputs.fail-on-provenance-change }}
+      - parallel:
+          - name: Check provenance downgrades
+            uses: danielroe/provenance-action@41bcc969e579d9e29af08ba44fcbfdf95cee6e6c # v0.1.1
+            with:
+              fail-on-provenance-change: ${{ inputs.fail-on-provenance-change }}
 
-      - name: Dependency review
-        if: github.event.pull_request || github.event.merge_group
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
-        with:
-          base-ref: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-          head-ref: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+          - name: Dependency review
+            if: github.event.pull_request || github.event.merge_group
+            uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+            with:
+              base-ref: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+              head-ref: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
