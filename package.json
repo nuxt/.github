@@ -2,7 +2,7 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "packageManager": "pnpm@11.15.0",
+  "packageManager": "pnpm@11.15.1",
   "devDependencies": {
     "@types/node": "^24.13.3"
   }
