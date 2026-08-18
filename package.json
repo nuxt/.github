@@ -1,9 +1,0 @@
-{
-  "private": true,
-  "type": "module",
-  "license": "MIT",
-  "packageManager": "pnpm@11.22.0",
-  "devDependencies": {
-    "@types/node": "^24.13.3"
-  }
-}
